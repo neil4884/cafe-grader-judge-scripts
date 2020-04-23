@@ -1,0 +1,45 @@
+#!/usr/bin/env ruby
+
+require 'fileutils'
+
+ENVIRONMENT_DIRS = ['ev', 'ev-exam']
+
+def config
+  Grader::Configuration.get_instance
+end
+
+def usage
+  puts <<USAGE
+Usage: 
+  dump_submission prob_id1 prob_id2 prob_id3 ...
+
+This will dumps all submission of the given problem ids into <current_dir>/<problem_name>/<user login>/<submission_id>
+USAGE
+end
+
+if (ARGV.length == 0)
+  usage
+  exit(0)
+end
+
+# load grader environment
+GRADER_ENV = 'grading'
+require File.join(File.dirname(__FILE__),'config/environment')
+
+# boot rails, to be able to rename the problem
+RAILS_ENV = config.rails_env
+require RAILS_ROOT + '/config/environment'
+
+prob_ids = ARGV.map{ |x| x.to_i}
+
+
+prob_ids.each do |id|
+  p = Problem.find(id)
+  p.submissions.each do |s|
+    dir = "#{p.name}/#{s.user.login}/#{s.id}.#{s.language.ext}"
+    filename = "#{s.id}.#{s.language.ext}"
+    FileUtils.mkdir_p dir
+    File.write("#{dir}/#{filename}",s.source)
+    puts filename
+  end
+end

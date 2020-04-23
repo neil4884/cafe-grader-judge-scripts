@@ -32,6 +32,7 @@ PYTHON_INTERPRETER = "/usr/bin/python3"
 PYTHON_CHECKER = "/usr/bin/pyflakes"
 PHP_INTERPRETER = "/usr/bin/php"
 HASKELL_COMPILER = "/usr/bin/ghc"
+OCTAVE_INTERPRETER = "/usr/bin/octave"
 
 C_OPTIONS = "-O2 -s -static -std=c99 -DCONTEST -lm -Wall"
 CPLUSPLUS_OPTIONS = "-O2 -s -std=c++11 -static -DCONTEST -lm -Wall"
@@ -185,6 +186,18 @@ when "haskell"
   command = "#{HASKELL_COMPILER} #{params[:source_file]} -o #{params[:output_file]} #{HASKELL_OPTIONS}"
   talk "COMPILE: compiling command [#{command}]"
   system(command, err: params[:message_file])
+
+when "octave"
+  command = "touch"
+  talk "COMPILE: compiling command [#{command}], log err to #{params[:message_file]}"
+  system(command, err: params[:message_file])
+  File.open(params[:output_file],"w") do |out_file|
+    out_file.puts "#!#{OCTAVE_INTERPRETER}"
+    File.open(params[:source_file],"r").each do |line|
+      out_file.print line
+    end
+  end
+  File.chmod(0755, params[:output_file])
 
 else
   talk("COMPILE: ERROR: Invalid language specified!")
