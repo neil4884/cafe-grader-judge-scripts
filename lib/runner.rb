@@ -28,27 +28,27 @@ module Grader
     # optionally, on all submission when options[:all_sub] is set
     # optionally, only submission that has error (use when the problem itself has some problem)
     def grade_problem(problem, options={})
-      user_index = 0
-      user_count = User.count
-      User.find_each do |u|
-        puts "user: #{u.login} (#{user_index}/#{user_count})"
-        user_index += 1
+      if options[:all_sub]
+        subs = problem.submissions
+
+      else
+        max_sql = problem.submissions.group('user_id')
+          .select('user_id','max(submissions.id) as max_sub_id').to_sql
+        subs = problem.submissions.joins("INNER JOIN (#{max_sql}) max_tbl " +
+                                         "ON submissions.user_id = max_tbl.user_id " +
+                                         "  AND submissions.id = max_tbl.max_sub_id")
+      end
+      count = subs.count
+      subs.each.with_index do |sub,idx|
+        puts "progres: #{idx+1}/#{count} sub: ##{sub.id} user: #{sub.user&.login}"
         if options[:user_conditions]!=nil
           con_proc = options[:user_conditions]
           next if not con_proc.call(u)
         end
-        if options[:all_sub]
-          Submission.where(user_id: u.id,problem_id: problem.id).find_each do |sub|
-            next if options[:only_err] and sub.grader_comment != 'error during grading'
-            @engine.grade(sub)
-          end
-        else
-          last_sub = Submission.find_last_by_user_and_problem(u.id,problem.id)
-          if last_sub!=nil
-            @engine.grade(last_sub) unless options[:only_err] and last_sub.grader_comment != 'error during grading'
-          end
-        end
+        next if options[:only_err] and sub.grader_comment != 'error during grading'
+        @engine.grade(sub)
       end
+
     end
 
     def grade_submission(submission)
