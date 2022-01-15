@@ -1,14 +1,37 @@
-#!/bin/sh
+#!/bin/bash
+
+#load RVM
+# Load RVM into a shell session *as a function*
+if [[ -s "$HOME/.rvm/scripts/rvm" ]] ; then
+
+  # First try to load from a user install
+  source "$HOME/.rvm/scripts/rvm"
+
+elif [[ -s "/usr/local/rvm/scripts/rvm" ]] ; then
+
+  # Then try to load from a root install
+  source "/usr/local/rvm/scripts/rvm"
+
+elif [[ -s "/usr/share/rvm/scripts/rvm" ]] ; then
+
+  # Then try to load from a root install of UBUNTU
+  source "/usr/share/rvm/scripts/rvm"
+
+else
+
+  printf "ERROR: An RVM installation was not found.\n"
+
+fi
 
 #installation script for cafe-grader, for ubuntu 16.04
 
 echo "This script will install and configure Cafe grader."
 
-RUBY_VERSION=2.6.3
+RUBY_VERSION=3.0.2
 RUBY_GEMSET=grader
 
 echo "Installing Ruby $RUBY_VERSION in RVM"
-
+type rvm | head -1
 rvm install $RUBY_VERSION
 rvm use $RUBY_VERSION@$RUBY_GEMSET
 
@@ -18,7 +41,7 @@ echo "Fetching web interface"
 
 mkdir cafe_grader
 cd cafe_grader
-git clone -q git://github.com/cafe-grader-team/cafe-grader-web.git web
+git clone -q git://github.com/nattee/cafe-grader-web.git web
 
 echo "Configuring rails app"
 
@@ -107,6 +130,7 @@ echo "GRADING_RESULT_DIR = '$CAFE_PATH/judge/result'" >> config/initializers/caf
 echo "Installing required gems"
 #gem install bundler
 #bundle install
+rvm use $RUBY_VERSION@$RUBY_GEMSET
 bundle
 
 echo "Running rake tasks to initialize database"
@@ -137,7 +161,7 @@ cd ..
 
 mkdir judge
 cd judge
-git clone -q git://github.com/cafe-grader-team/cafe-grader-judge-scripts.git scripts
+git clone -q git://github.com/nattee/cafe-grader-judge-scripts.git scripts
 mkdir raw
 mkdir ev-exam
 mkdir ev
@@ -159,8 +183,10 @@ echo "require File.dirname(__FILE__) + \"/env_#{GRADER_ENV}.rb\"" >> scripts/con
 MACHINE_TYPE=`uname -m`
 if [ ${MACHINE_TYPE} == 'x86_64' ]; then
   gcc -std=c99 -o scripts/std-script/box scripts/std-script/box64-new.c
+  echo "compiling box64-new.c"
 else
   g++ -o scripts/std-script/box scripts/std-script/box.cc
+  echo "compiling box.cc"
 fi
 
 
