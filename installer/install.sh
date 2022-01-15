@@ -27,7 +27,7 @@ fi
 
 echo "This script will install and configure Cafe grader."
 
-RUBY_VERSION=3.0.2
+RUBY_VERSION=3.1.0
 RUBY_GEMSET=grader
 
 echo "Installing Ruby $RUBY_VERSION in RVM"
