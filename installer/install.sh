@@ -33,7 +33,7 @@ RUBY_GEMSET=grader
 echo "Installing Ruby $RUBY_VERSION in RVM"
 type rvm | head -1
 rvm install $RUBY_VERSION
-rvm use $RUBY_VERSION@$RUBY_GEMSET
+rvm use $RUBY_VERSION@$RUBY_GEMSET --create
 
 echo "Fetching Cafe Grader from Git repositories"
 
@@ -41,7 +41,7 @@ echo "Fetching web interface"
 
 mkdir cafe_grader
 cd cafe_grader
-git clone -q git://github.com/nattee/cafe-grader-web.git web
+git clone -q https://github.com/nattee/cafe-grader-web.git web
 
 echo "Configuring rails app"
 
@@ -161,7 +161,7 @@ cd ..
 
 mkdir judge
 cd judge
-git clone -q git://github.com/nattee/cafe-grader-judge-scripts.git scripts
+git clone -q https://github.com/nattee/cafe-grader-judge-scripts.git scripts
 mkdir raw
 mkdir ev-exam
 mkdir ev
